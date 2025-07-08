@@ -23,6 +23,38 @@ const addKuribo = (x, y) => {
     });
 };
 
+const pipe = {
+    x: 800,
+    y: 470,
+    width: 90,
+    height: 130,
+    color: '#339933'
+};
+
+const thwomp = {
+    x: 300,
+    y: 13,
+    width: 90,
+    height: 130,
+    color: '#C0C0C0',
+    vy: 3,
+    direction: 1,
+    topLimit: 13,
+    bottomLimit: 400,
+};
+
+// ドッスン描画
+const drawThwomp = (obj) => {
+    ctx.fillStyle = obj.color;
+    ctx.fillRect(obj.x - scrollX, obj.y, obj.width, obj.height);
+};
+
+// 土管描画
+const drawPipe = (obj) => {
+    ctx.fillStyle = obj.color;
+    ctx.fillRect(obj.x - scrollX, obj.y, obj.width, obj.height);
+};
+
 // 初期敵
 addKuribo(400, 300);
 
@@ -91,6 +123,10 @@ const draw = () => {
         ctx.fillRect(e.x - scrollX, e.y, e.width, e.height);
     });
 
+    drawPipe (pipe);
+
+    drawThwomp (thwomp);
+
     // ゲームオーバー表示
     if (gameState === 'gameover') {
         ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -112,6 +148,17 @@ const action = () => {
             mario.vy = -mario.jump;
             mario.isOnGround = false;
         }
+
+        thwomp.y += thwomp.vy * thwomp.direction;
+        if (thwomp.y >= thwomp.bottomLimit) {
+            thwomp.y = thwomp.bottomLimit;
+            thwomp.direction = -1;
+        } else if (thwomp.y <= thwomp.topLimit) {
+            thwomp.y = thwomp.topLimit;
+            thwomp.direction = -1;
+        }
+    
+        
 
         mario.vy += mario.gravity;
         mario.x  += mario.vx;
