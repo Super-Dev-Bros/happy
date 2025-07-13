@@ -16,30 +16,22 @@ const mariko = {
     isOnGround: false
 };
 
-// ブロックのステータス x,yはユーザー側にいじってもらうか？　大きさは固定のほうがよさげ
-// 複数ブロックが作れるように配列として扱う
-const blocks = [
-    {
-        x: 150,
-        y: 510,
-        width: 40,
-        height: 40,
-        //color: 'brown',
-    },
-    {
-        x: 300,
-        y: 400,
-        width: 40,
-        height: 40,
-        //color: 'brown',
-    }
-];
 const groundY = 550;
 const keys = {};
 const scrollX = 0;
+const blocks = [];
 
 document.addEventListener( 'keydown', e => keys[e.code] = true );
 document.addEventListener( 'keyup', e => keys[e.code] = false );
+
+const makeBlock = (x, y) => {
+    return {
+        x,
+        y,
+        width: 40,
+        height: 40,
+    };
+};
 
 const draw = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -48,10 +40,16 @@ const draw = () => {
     ctx.fillStyle = mariko.color;
     ctx.fillRect(mariko.x - scrollX, mariko.y, mariko.width, mariko.height);
 
-    // clearRectされた後にブロック描画処理
+    // 現在の座標を表示
+    ctx.fillStyle = 'yellow';
+    ctx.font = '25px "Press Start 2P"';
+    ctx.fillText(
+        `X: ${Math.floor(mariko.x)}, Y: ${Math.floor(mariko.y)}`,
+        mariko.x - scrollX,
+        25
+);
+    // ブロック描画処理
     blocks.forEach(block => {
-        // 画像にしてみたけど周りの2D感に負けてる
-        // またつまらぬものを浮かせてしまった、、、
         ctx.drawImage(
             blockImage,
             block.x - scrollX,
@@ -60,7 +58,6 @@ const draw = () => {
             block.height
         );
     });
-
 };
 
 const action = () => {
@@ -81,23 +78,48 @@ const action = () => {
         mariko.isOnGround = true;
     }
 
+    // ブロックの当たり判定(上下左右)
     blocks.forEach(block => {
-        const isColliding = 
-            mariko.x < block.x + block.width &&
-            mariko.x + mariko.width > block.x &&
-            mariko.y < block.y + block.height &&
-            mariko.y + mariko.height > block.y;
-    
-        if (isColliding) {
-            // marikoがブロックに着地したかどうか
-            if (mariko.vy > 0 && mariko.y + mariko.height - mariko.vy <= block.y) {
-                // 着地判定
-                mariko.y = block.y - mariko.height;
-                mariko.vy = 0;
-                mariko.isOnGround = true;
-            }
+    const isColliding = 
+        mariko.x < block.x + block.width &&
+        mariko.x + mariko.width > block.x &&
+        mariko.y < block.y + block.height &&
+        mariko.y + mariko.height > block.y;
+
+    if (isColliding) {
+        const prevBottom = mariko.y + mariko.height - mariko.vy;
+        const prevTop = mariko.y - mariko.vy;
+        const prevRight = mariko.x + mariko.width - mariko.vx;
+        const prevLeft = mariko.x - mariko.vx;
+
+        const isFromTop = mariko.vy > 0 && prevBottom <= block.y;
+        const isFromBottom = mariko.vy < 0 && prevTop >= block.y + block.height;
+        const isFromLeft = mariko.vx > 0 && prevRight <= block.x;
+        const isFromRight = mariko.vx < 0 && prevLeft >= block.x + block.width;
+
+        if (isFromTop) {
+            // 上
+            mariko.y = block.y - mariko.height;
+            mariko.vy = 0;
+            mariko.isOnGround = true;
+        } else if (isFromBottom) {
+            // 下
+            mariko.y = block.y + block.height;
+            mariko.vy = 0;
+        } else if (isFromLeft) {
+            // 左
+            mariko.x = block.x - mariko.width;
+            mariko.vx = 0;
+        } else if (isFromRight) {
+            // 右
+            mariko.x = block.x + block.width;
+            mariko.vx = 0;
         }
-    });
+    }
+});
+    // ブロックを追加
+    blocks.push(makeBlock(250, 450));
+    blocks.push(makeBlock(250, 410));
 
     draw();
     requestAnimationFrame(action);
