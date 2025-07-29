@@ -32,15 +32,16 @@ const pipe = {
 };
 
 const thwomp = {
-    x: 300,
+x: 300,
     y: 13,
     width: 90,
     height: 130,
     color: '#C0C0C0',
-    vy: 3,
-    direction: 1,
+    vy: 6,
+    direction: 0, // 1: 下へ, -1: 上へ, 0: 停止中
     topLimit: 13,
     bottomLimit: 400,
+    isWaiting: false,
 };
 
 // ドッスン描画
@@ -149,16 +150,23 @@ const action = () => {
             mario.isOnGround = false;
         }
 
-        thwomp.y += thwomp.vy * thwomp.direction;
-        if (thwomp.y >= thwomp.bottomLimit) {
-            thwomp.y = thwomp.bottomLimit;
-            thwomp.direction = -1;
-        } else if (thwomp.y <= thwomp.topLimit) {
-            thwomp.y = thwomp.topLimit;
-            thwomp.direction = -1;
+const thwompTriggerDistance = 100;
+        const dx = Math.abs((mario.x + mario.width / 2) - (thwomp.x + thwomp.width / 2));
+        if (dx < thwompTriggerDistance && thwomp.direction === 0 && thwomp.y <= thwomp.topLimit + 1) {
+            thwomp.direction = 1;
         }
-    
-        
+
+        if (thwomp.direction !== 0) {
+            thwomp.y += thwomp.vy * thwomp.direction;
+
+            if (thwomp.y >= thwomp.bottomLimit) {
+                thwomp.y = thwomp.bottomLimit;
+                thwomp.direction = -1;
+            } else if (thwomp.y <= thwomp.topLimit) {
+                thwomp.y = thwomp.topLimit;
+                thwomp.direction = 0;    
+            }
+        }
 
         mario.vy += mario.gravity;
         mario.x  += mario.vx;
