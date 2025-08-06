@@ -2,7 +2,7 @@ const canvas = document.getElementById('gamecanvas');
 const ctx = canvas.getContext('2d');
 
 const groundY = 550;
-const worldWidth = 3000;
+const worldWidth = 5000;
 let scrollX = 0;
 let lastTime = 0;
 let isGameOver = false;
@@ -12,6 +12,8 @@ const keys = {};
 const marikoImg = new Image(); marikoImg.src = 'aa0f1de1-65f8-42fc-86f0-fd38917296a9.png';
 const blockImg = new Image(); blockImg.src = 'block.png';
 const goalImg = new Image(); goalImg.src = '8re7l5pj.jpg';
+const enemyImg = new Image(); enemyImg.src = 'kurubo-.png';
+const bossImg = new Image(); bossImg.src = 'kuppo.png';
 
 const mariko = {
   x: 50,
@@ -30,32 +32,41 @@ const blocks = [
   { x: 400, y: 450, width: 100, height: 30 },
   { x: 600, y: 400, width: 100, height: 30 },
   { x: 900, y: 350, width: 100, height: 30 },
+  { x: 2100, y: 450, width: 100, height: 30 },
+  { x: 2350, y: 420, width: 100, height: 30 },
+  { x: 2540, y: 300, width: 100, height: 30 },
+  { x: 2800, y: 200, width: 100, height: 30 },
+  { x: 3200, y: 0, width: 100, height: 350 },
+  { x: 3200, y: 480, width: 130, height: 70 },
 ];
 
+// 穴
 const holes = [
-  { x: 1200, width: 120 }, // 穴
+  { x: 1200, width: 120 },
+  { x: 2000, width: 1500 },
 ];
 
 const enemies = [
-  { x: 800, y: 520, width: 40, height: 40, vx: 1, minX: 750, maxX: 950 },
-  { x: 1400, y: 520, width: 40, height: 40, vx: 1, minX: 1350, maxX: 1550 },
+  { x: 800, y: 510, width: 40, height: 60, vx: 1, minX: 750, maxX: 950 },
+  { x: 1400, y: 510, width: 40, height: 60, vx: 1, minX: 1350, maxX: 1550 },
+  { x: 2150, y: 240, width: 40, height: 60, vx: 2, minX: 2150, maxX: 2700 },
 ];
 
 const thwomps = [
   { x: 1800, y: 50, width: 80, height: 80, vy: 2, top: 50, bottom: groundY - 80, direction: 1 },
 ];
 
-const goal = { x: 2800, y: 450, width: 50, height: 100 };
+const goal = { x: 4800, y: 450, width: 50, height: 100 };
 
 let boss = null;
 const spawnBossAtStart = () => {
-  const appearChance = 0.8; 
+  const appearChance = 0.1; 
   if (Math.random() < appearChance) {
     boss = {
       x: 2200,
-      y: 250,
+      y: 120,
       width: 320,
-      height: 300,
+      height: 600,
       vx: -10
     };
   } else {
@@ -78,7 +89,7 @@ const restartGame = () => {
   scrollX = 0;
   isGameOver = false; isGameClear = false;
   enemies.forEach((e, i) => {
-    e.x = [800,1400][i]; e.vx = 1;
+    e.x = [800,1400,2150][i]; e.vx = 1;
   });
   thwomps.forEach(t => { t.y = t.top; t.direction = 1; });
   spawnBossAtStart();
@@ -273,7 +284,7 @@ const drawBlocks = () => {
 };
 const drawEnemies = () => {
   ctx.fillStyle = 'purple';
-  for (const enemy of enemies) ctx.fillRect(enemy.x - scrollX, enemy.y, enemy.width, enemy.height);
+  for (const enemy of enemies) ctx.drawImage(enemyImg, enemy.x - scrollX, enemy.y, enemy.width, enemy.height);
 };
 const drawThwomps = () => {
   ctx.fillStyle = 'gray';
@@ -281,8 +292,7 @@ const drawThwomps = () => {
 };
 const drawBoss = () => {
   if (!boss) return;
-  ctx.fillStyle = 'red';
-  ctx.fillRect(boss.x - scrollX, boss.y, boss.width, boss.height);
+  ctx.drawImage(bossImg, boss.x - scrollX, boss.y, boss.width, boss.height);
 };
 const drawPlayer = () => {
   ctx.drawImage(marikoImg, mariko.x - scrollX, mariko.y, mariko.width, mariko.height);
