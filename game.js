@@ -49,7 +49,7 @@ const holes = [
 const enemies = [
   { x: 800, y: 510, width: 40, height: 60, vx: 1, minX: 750, maxX: 950 },
   { x: 1400, y: 510, width: 40, height: 60, vx: 1, minX: 1350, maxX: 1550 },
-  { x: 2150, y: 260, width: 40, height: 60, vx: 2, minX: 2150, maxX: 2700 },
+  { x: 2150, y: 240, width: 40, height: 60, vx: 2, minX: 2150, maxX: 2700 },
 ];
 
 const thwomps = [
