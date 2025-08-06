@@ -7,7 +7,6 @@ let scrollX = 0;
 let lastTime = 0;
 let isGameOver = false;
 let isGameClear = false;
-let isFallingInHole = false;
 const keys = {};
 
 const marikoImg = new Image(); marikoImg.src = 'aa0f1de1-65f8-42fc-86f0-fd38917296a9.png';
@@ -15,21 +14,26 @@ const blockImg = new Image(); blockImg.src = 'block.png';
 const goalImg = new Image(); goalImg.src = '8re7l5pj.jpg';
 
 const mariko = {
-  x: 50, y: 300,
-  width: 80, height: 120,
-  vx: 0, vy: 0,
-  speed: 5, jump: 15, gravity: 0.8,
+  x: 50,
+  y: 300,
+  width: 80, 
+  height: 120,
+  vx: 0, 
+  vy: 0,
+  speed: 5, 
+  jump: 15,
+  gravity: 0.8,
   isOnGround: false
 };
 
 const blocks = [
   { x: 400, y: 450, width: 100, height: 30 },
   { x: 600, y: 400, width: 100, height: 30 },
-  { x: 1800, y: 350, width: 100, height: 30 },
+  { x: 900, y: 350, width: 100, height: 30 },
 ];
 
 const holes = [
-  { x: 1200, width: 120 }, 
+  { x: 1200, width: 120 }, // 穴
 ];
 
 const enemies = [
@@ -38,10 +42,26 @@ const enemies = [
 ];
 
 const thwomps = [
-  { x: 1800, y: 50, width: 80, height: 80, vy: 2, top: 50, direction: 1 },
+  { x: 1800, y: 50, width: 80, height: 80, vy: 2, top: 50, bottom: groundY - 80, direction: 1 },
 ];
 
 const goal = { x: 2800, y: 450, width: 50, height: 100 };
+
+let boss = null;
+const spawnBossAtStart = () => {
+  const appearChance = 0.8; 
+  if (Math.random() < appearChance) {
+    boss = {
+      x: 2200,
+      y: 250,
+      width: 320,
+      height: 300,
+      vx: -10
+    };
+  } else {
+    boss = null;
+  }
+};
 
 window.addEventListener('keydown', e => {
   if (["Space","ArrowUp","ArrowDown"].includes(e.code)) e.preventDefault();
@@ -57,11 +77,11 @@ const restartGame = () => {
   mariko.vx = 0; mariko.vy = 0;
   scrollX = 0;
   isGameOver = false; isGameClear = false;
-  isFallingInHole = false;
   enemies.forEach((e, i) => {
     e.x = [800,1400][i]; e.vx = 1;
   });
   thwomps.forEach(t => { t.y = t.top; t.direction = 1; });
+  spawnBossAtStart();
 };
 
 const loop = timestamp => {
@@ -72,7 +92,6 @@ const loop = timestamp => {
   requestAnimationFrame(loop);
 };
 
-
 const update = () => {
   if (isGameOver || isGameClear) return;
 
@@ -81,29 +100,23 @@ const update = () => {
   mariko.x += mariko.vx;
   checkBlockCollisionX();
 
-  if (keys['Space'] && mariko.isOnGround && !isFallingInHole) {
+  if (keys['Space'] && mariko.isOnGround) {
     mariko.vy = -mariko.jump;
     mariko.isOnGround = false;
   }
   mariko.vy += mariko.gravity;
   mariko.y += mariko.vy;
-
-  if (!isFallingInHole) {
-    checkBlockCollisionY();
-    checkGroundCollision();
-    checkHole();
-  }
+  checkBlockCollisionY();
+  checkGroundCollision();
+  checkHole();
 
   clampPosition();
   updateScroll();
   updateEnemies();
   updateThwomps();
+  updateBoss();
   checkEnemyCollision();
   checkGoal();
-
-  if (isFallingInHole && mariko.y > canvas.height) {
-    isGameOver = true;
-  }
 };
 
 const clampPosition = () => {
@@ -144,8 +157,9 @@ const checkHole = () => {
   for (const hole of holes) {
     const playerCenterX = mariko.x + mariko.width / 2;
     if (playerCenterX > hole.x && playerCenterX < hole.x + hole.width) {
-      isFallingInHole = true;
-      mariko.isOnGround = false;
+      if (mariko.y + mariko.height >= groundY) {
+        isGameOver = true;
+      }
     }
   }
 };
@@ -171,28 +185,29 @@ const updateEnemies = () => {
 const updateThwomps = () => {
   for (const t of thwomps) {
     t.y += t.vy * t.direction;
-
-    
-    if (t.y <= t.top) {
-      t.y = t.top;
-      t.direction = 1;
+    if (t.y <= t.top || t.y + t.height >= t.bottom) {
+      t.direction *= -1;
     }
-
-    if (t.y + t.height >= groundY) {
-      t.y = groundY - t.height;
-      t.direction = -1;
-    }
-
     for (const block of blocks) {
       const collideX = t.x + t.width > block.x && t.x < block.x + block.width;
       if (!collideX) continue;
       if (t.direction > 0 && t.y + t.height > block.y && t.y < block.y) {
-        t.y = block.y - t.height; t.direction = -1;
+        t.y = block.y - t.height; t.direction *= -1;
       } else if (t.direction < 0 && t.y < block.y + block.height && t.y + t.height > block.y + block.height) {
-        t.y = block.y + block.height; t.direction = 1;
+        t.y = block.y + block.height; t.direction *= -1;
       }
     }
   }
+};
+const updateBoss = () => {
+  if (!boss) return;
+  boss.x += boss.vx;
+
+  const overlapX = mariko.x < boss.x + boss.width && mariko.x + mariko.width > boss.x;
+  const overlapY = mariko.y < boss.y + boss.height && mariko.y + mariko.height > boss.y;
+  if (overlapX && overlapY) isGameOver = true;
+
+  if (boss.x + boss.width < 0) boss = null;
 };
 const checkEnemyCollision = () => {
   const allEnemies = [...enemies, ...thwomps];
@@ -218,6 +233,7 @@ const updateScroll = () => {
   scrollX = Math.min(Math.max(0, targetScroll), maxScroll);
 };
 
+// --- 描画 ---
 const draw = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawSky();
@@ -226,6 +242,7 @@ const draw = () => {
   drawBlocks();
   drawEnemies();
   drawThwomps();
+  drawBoss();
   drawGoal();
   drawPlayer();
 
@@ -248,7 +265,7 @@ const drawGround = () => {
   ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
 };
 const drawHoles = () => {
-  ctx.fillStyle = '#87CEEB';
+  ctx.fillStyle = 'black';
   for (const hole of holes) ctx.fillRect(hole.x - scrollX, groundY, hole.width, canvas.height - groundY);
 };
 const drawBlocks = () => {
@@ -262,6 +279,11 @@ const drawThwomps = () => {
   ctx.fillStyle = 'gray';
   for (const t of thwomps) ctx.fillRect(t.x - scrollX, t.y, t.width, t.height);
 };
+const drawBoss = () => {
+  if (!boss) return;
+  ctx.fillStyle = 'red';
+  ctx.fillRect(boss.x - scrollX, boss.y, boss.width, boss.height);
+};
 const drawPlayer = () => {
   ctx.drawImage(marikoImg, mariko.x - scrollX, mariko.y, mariko.width, mariko.height);
 };
@@ -269,4 +291,5 @@ const drawGoal = () => {
   ctx.drawImage(goalImg, goal.x - scrollX, goal.y, goal.width, goal.height);
 };
 
+spawnBossAtStart();
 requestAnimationFrame(loop);
