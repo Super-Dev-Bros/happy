@@ -68,28 +68,28 @@ const initialBlockCount = 9; // 初期ブロック数（ペナルティ計算用
 
 // 足場のブロックたち（x: X座標, y: Y座標, width: 幅, height: 高さ）
 const blocks = [
-  { x: 400, y: 450, width: 100, height: 30 },   // 1つ目の足場
-  { x: 600, y: 400, width: 100, height: 30 },   // 2つ目の足場（少し高い）
-  { x: 865, y: 350, width: 100, height: 30 },   // 3つ目の足場（もっと高い）
-  { x: 2100, y: 450, width: 100, height: 30 },  // 4つ目の足場（遠くの足場）
-  { x: 2350, y: 420, width: 100, height: 30 },  // 5つ目の足場
-  { x: 2540, y: 300, width: 100, height: 30 },  // 6つ目の足場（高い位置）
-  { x: 2800, y: 200, width: 100, height: 30 },  // 7つ目の足場（さらに高い）
-  { x: 3200, y: 0, width: 100, height: 350 },   // 8つ目の足場（壁のような高いブロック）
-  { x: 3200, y: 480, width: 130, height: 70 },  // 9つ目の足場（幅が広い）
+  { x: 400, y: 450, width: 100, height: 30 },
+  { x: 600, y: 400, width: 100, height: 30 },
+  { x: 865, y: 350, width: 100, height: 30 },
+  { x: 2100, y: 450, width: 100, height: 30 }, 
+  { x: 2350, y: 420, width: 100, height: 30 },  
+  { x: 2540, y: 300, width: 100, height: 30 },  
+  { x: 2800, y: 200, width: 100, height: 30 },  
+  { x: 3200, y: 0, width: 100, height: 350 },  
+  { x: 3200, y: 480, width: 130, height: 70 },  
 ];
 
 // ===== トランポリン =====
 const trampolines = [
-  { x: 1500, y: 480, width: 80, height: 20, power: 2.5 },  // 通常のトランポリン
-  { x: 3000, y: 480, width: 80, height: 20, power: 1.1 },  // 高く跳ねるトランポリン
+  { x: 1500, y: 480, width: 80, height: 20, power: 2.5 }, 
+  { x: 3000, y: 480, width: 80, height: 20, power: 1.1 },  
 ];
 
 // ===== 落とし穴（死亡トラップ）=====
 const holes = [
   { x: 1200, width: 130 },   // 1つ目の穴（初期エリア）
   { x: 2000, width: 1500 },  // 2つ目の穴（巨大な穴）
-  { x: 4700, width: 120 },   // 3つ目の穴（ゴール直前の緑色の穴）
+  { x: 4700, width: 120 },   
 ];
 
 // ===== 敵キャラクター（左右移動）=====
@@ -108,7 +108,6 @@ const thwomps = [
 // ===== ゴール=====
 const goal = { x: 4800, y: 450, width: 50, height: 100 };
 
-// ===== ボス=====
 let boss = null;
 
 // ゲーム開始時にボスを出現させるかどうかを決める関数
@@ -359,10 +358,6 @@ const updateThwomps = () => {
   }
 };
 
-/**
- * ボスキャラクターの動きを更新する関数
- * ボスの移動とプレイヤーとの当たり判定を処理する
- */
 const updateBoss = () => {
   if (!boss) return;
   
